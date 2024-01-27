@@ -1,4 +1,5 @@
-const sqlite3 = require('sqlite3');
+// faz as importações necessárias
+const sqlite3 = require('sqlite3'); // SQLite3 é o driver do SQLite
 const sqlite = require('sqlite');
 const path = require('path');
 

@@ -1,13 +1,18 @@
+// importa dois métodos dentro do arquivo bcryptjs
 const { hash, compare} = require('bcryptjs');
 
+// importa o AppError pra reportar erro
 const AppError = require('../utils/AppError');
 
+// importa a conexão com o banco de dados
 const sqliteConnection = require('../database/sqlite');
 
+// métodos utilizados para o routes
 class UsersController {
  async create(request, response) {
     const { name, email, password } = request.body;
 
+    // conecta com o banco de dados
     const database = await sqliteConnection();
 
     const checkUserExists = await database.get('SELECT * FROM users WHERE email = (?)', [email]);
@@ -16,8 +21,10 @@ class UsersController {
       throw new AppError('Este e-mail já está em uso');
     }
 
+    // criptografa a senha do usuário
     const hashedPassword = await hash(password, 8);
 
+    // executa o comando para criar o usuário no banco de dados
     await database.run('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, hashedPassword]);
 
     return response.status(201).json();
@@ -54,9 +61,10 @@ class UsersController {
         throw new AppError('A senha não confere');
       }
 
-      user.password = await has(password, 8);
+      user.password = await hash(password, 8);
     }
 
+    // utiliza o comando da própria tabela (DATETIME('NOW')) para gerar consistência nos formatos da data
     await databse.run(`
       UPDATE users SET
       name = ?,

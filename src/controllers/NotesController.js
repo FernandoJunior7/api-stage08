@@ -5,12 +5,15 @@ class NotesController {
     const { title, description, tags, links } = request.body;
     const { user_id } = request.params;
 
+    // insere na tabela nota, knex retorna o número do id das notas inseridas
+    // precisa da variável pra salvar aas tags e links
     const [note_id] = await knex('notes').insert({
       title,
       description,
       user_id
     });
 
+    // constrói um novo vetor em cima do antigo
     const linksInsert = links.map(link => {
       return {
         note_id,
@@ -18,8 +21,10 @@ class NotesController {
       }
     });
 
+    // não precisa salvar o id do link, ent pula
     await knex('links').insert(linksInsert);
 
+    //  mesma coisa que link, só que tag
     const tagsInsert = tags.map(name => {
       return {
         note_id,
@@ -36,11 +41,14 @@ class NotesController {
   async show(request, response) {
     const { id } = request.params;
 
+    // first pra prevenir o knex de retornar um array ao invés de um objeto apenas
     const note = await knex('notes').where({id}).first();
+    // a comparação funciona desse jeito {coluna_na_tabela: valor_esperado }
     const tags = await knex('tags').where({note_id: id}).orderBy('name');
     const links = await knex('links').where({note_id: id}).orderBy('created_at');
 
     return response.json({
+      // junta todo o conteúdo presente em note com tags e links
       ...note,
       tags,
       links
@@ -61,9 +69,9 @@ class NotesController {
     let notes;
 
     if (tags) {
+      // primeiro vai transformar as tags em vetor separando pela vírgula e depois tirar o 
+      // espaço em branco do começo e do final da palavra
       const filterTags = tags.split(',').map(tag => tag.trim());
-
-      console.log(filterTags);
 
       notes = await knex('tags')
         .select([
@@ -86,7 +94,7 @@ class NotesController {
 
     const userTags = await knex('tags').where({user_id});
     const notesWithTags = notes.map(note => {
-      const noteTags = userTags.filter(tag => tag.note_id === note.id);
+    const noteTags = userTags.filter(tag => tag.note_id === note.id);
 
       return {
         ...note,
