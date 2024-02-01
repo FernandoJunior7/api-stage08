@@ -30,7 +30,7 @@ class UsersController {
     return response.status(201).json();
   }
 
-  async update(request, responnse) {
+  async update(request, response) {
     const {name, email, password, old_password } = request.body;
     const {id} = request.params;
 
